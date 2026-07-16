@@ -354,6 +354,11 @@ const StretchBlock = ({ title, items, light, accent }) => (
         <div key={i} style={{ background: light, borderRadius: 8, padding: "8px 10px", borderLeft: `3px solid ${accent}` }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#1a1a1a" }}>{it.name}</div>
           <div style={{ fontSize: 10, color: "#888", marginTop: 1 }}>{it.detail}</div>
+          <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(it.name + " exercise proper form")}`}
+            target="_blank" rel="noopener noreferrer"
+            style={{ display: "inline-block", marginTop: 4, fontSize: 10, fontWeight: 700, color: accent, textDecoration: "none" }}>
+            ▶ Watch
+          </a>
         </div>
       ))}
     </div>
