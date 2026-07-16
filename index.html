@@ -47,6 +47,18 @@ const days = [
       { name: "Calf Raise", sets: 2, reps: "12–15", img: img("Standing_Dumbbell_Calf_Raise") },
       { name: "Farmer's Carry", sets: 2, reps: "30–45 sec", img: img("Farmers_Walk") },
     ],
+    warmup: [
+      { name: "March in Place / High Knees", detail: "60 sec" },
+      { name: "Bodyweight Squats", detail: "15 reps" },
+      { name: "Leg Swings (front-back)", detail: "10 each leg" },
+      { name: "Ankle Circles", detail: "10 each way" },
+    ],
+    cooldown: [
+      { name: "Standing Quad Stretch", detail: "30 sec each leg" },
+      { name: "Standing Hamstring Stretch", detail: "30 sec each leg" },
+      { name: "Calf Stretch (wall)", detail: "30 sec each leg" },
+      { name: "Child's Pose", detail: "30 sec" },
+    ],
     tip: "Push through heels. Control the movement. Use a weight that makes the last 1–2 reps challenging.",
     muscles: ["Quads", "Glutes", "Calves"],
   },
@@ -59,6 +71,18 @@ const days = [
       { name: "Shoulder Press", sets: 2, reps: "8–12", img: img("Dumbbell_Shoulder_Press") },
       { name: "Lateral Raise", sets: 2, reps: "12–15", img: img("Side_Lateral_Raise") },
       { name: "Overhead Tricep Extension", sets: 2, reps: "10–12", img: img("Standing_Dumbbell_Triceps_Extension") },
+    ],
+    warmup: [
+      { name: "Arm Circles", detail: "30 sec each way" },
+      { name: "Shoulder Rolls / Band Pull-Aparts", detail: "15 reps" },
+      { name: "Push-Up to Down Dog", detail: "8 reps" },
+      { name: "Light Punches / Shadow Press", detail: "30 sec" },
+    ],
+    cooldown: [
+      { name: "Doorway Chest Stretch", detail: "30 sec each side" },
+      { name: "Overhead Triceps Stretch", detail: "30 sec each arm" },
+      { name: "Cross-Body Shoulder Stretch", detail: "30 sec each arm" },
+      { name: "Child's Pose", detail: "30 sec" },
     ],
     tip: "Press movements. Keep core tight. Lower the weight slowly and with control.",
     muscles: ["Chest", "Shoulders", "Triceps"],
@@ -73,6 +97,18 @@ const days = [
       { name: "Glute Bridge", sets: 2, reps: "12–15", img: img("Barbell_Glute_Bridge") },
       { name: "Plank", sets: 2, reps: "30–45 sec", img: img("Plank") },
     ],
+    warmup: [
+      { name: "Glute Bridges", detail: "15 reps" },
+      { name: "Leg Swings (side-to-side)", detail: "10 each leg" },
+      { name: "Walking Lunges", detail: "10 each leg" },
+      { name: "Cat-Cow", detail: "8 reps" },
+    ],
+    cooldown: [
+      { name: "Seated Hamstring Stretch", detail: "30 sec each leg" },
+      { name: "Figure-4 Glute Stretch", detail: "30 sec each leg" },
+      { name: "Kneeling Hip Flexor Stretch", detail: "30 sec each leg" },
+      { name: "Child's Pose", detail: "30 sec" },
+    ],
     tip: "Hinge at hips on deadlift. Squeeze glutes at the top of bridges. Keep a straight line in plank.",
     muscles: ["Hamstrings", "Glutes", "Core"],
   },
@@ -85,6 +121,18 @@ const days = [
       { name: "Resistance Band Face Pull", sets: 2, reps: "12–15", img: img("Face_Pull") },
       { name: "Hammer Curl", sets: 2, reps: "10–12", img: img("Hammer_Curls") },
       { name: "Biceps Curl", sets: 2, reps: "10–12", img: img("Dumbbell_Bicep_Curl") },
+    ],
+    warmup: [
+      { name: "Arm Circles", detail: "30 sec each way" },
+      { name: "Scapular Pulls / Shoulder Rolls", detail: "15 reps" },
+      { name: "Light Band Rows", detail: "15 reps" },
+      { name: "Cat-Cow", detail: "8 reps" },
+    ],
+    cooldown: [
+      { name: "Overhead Side Lat Stretch", detail: "30 sec each side" },
+      { name: "Doorway Chest/Bicep Stretch", detail: "30 sec" },
+      { name: "Neck & Upper Trap Stretch", detail: "30 sec each side" },
+      { name: "Child's Pose", detail: "30 sec" },
     ],
     tip: "Pull movements. Squeeze shoulder blades together. Slow and controlled.",
     muscles: ["Back", "Biceps", "Rear Shoulders"],
@@ -99,6 +147,18 @@ const days = [
       { name: "One-Arm Row", sets: 2, reps: "8–12", img: img("One-Arm_Dumbbell_Row") },
       { name: "Shoulder Press", sets: 2, reps: "8–12", img: img("Dumbbell_Shoulder_Press") },
       { name: "Farmer's Carry", sets: 2, reps: "30–45 sec", img: img("Farmers_Walk") },
+    ],
+    warmup: [
+      { name: "Jumping Jacks / March in Place", detail: "60 sec" },
+      { name: "Bodyweight Squats", detail: "15 reps" },
+      { name: "Arm Circles", detail: "30 sec each way" },
+      { name: "Walking Lunges", detail: "10 each leg" },
+    ],
+    cooldown: [
+      { name: "Standing Forward Fold", detail: "30 sec" },
+      { name: "Standing Quad Stretch", detail: "30 sec each leg" },
+      { name: "Doorway Chest Stretch", detail: "30 sec" },
+      { name: "Child's Pose", detail: "30 sec" },
     ],
     tip: "Use moderate-heavy weights. Great full body workout to finish the week.",
     muscles: ["Chest", "Back", "Shoulders", "Quads", "Hamstrings", "Glutes"],
@@ -286,6 +346,20 @@ const Calendar = ({ viewMonth, setViewMonth, selectedDate, onSelect, completed }
   );
 };
 
+const StretchBlock = ({ title, items, light, accent }) => (
+  <div style={{ padding: "12px 20px 4px" }}>
+    <div style={{ fontSize: 10, fontWeight: 800, color: "#999", letterSpacing: "0.1em", marginBottom: 8 }}>{title}</div>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+      {items.map((it, i) => (
+        <div key={i} style={{ background: light, borderRadius: 8, padding: "8px 10px", borderLeft: `3px solid ${accent}` }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#1a1a1a" }}>{it.name}</div>
+          <div style={{ fontSize: 10, color: "#888", marginTop: 1 }}>{it.detail}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 const WeekdayCard = ({ d, dateLabel, openEx, toggleEx, isCompleted, onToggleComplete }) => (
   <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", marginBottom: 20 }}>
     <div style={{ background: d.color, padding: "20px 20px 16px" }}>
@@ -307,7 +381,8 @@ const WeekdayCard = ({ d, dateLabel, openEx, toggleEx, isCompleted, onToggleComp
         {d.muscles.map((m) => <MuscleTag key={m} name={m} />)}
       </div>
     </div>
-    <div style={{ background: d.light, padding: "6px 20px", fontSize: 10, color: d.accent, fontWeight: 600, letterSpacing: "0.05em" }}>
+    <StretchBlock title="WARM-UP — 5 MIN" items={d.warmup} light={d.light} accent={d.accent} />
+    <div style={{ background: d.light, padding: "6px 20px", fontSize: 10, color: d.accent, fontWeight: 600, letterSpacing: "0.05em", marginTop: 10 }}>
       TAP AN EXERCISE TO SEE THE FULL PHOTO
     </div>
     <div style={{ padding: "4px 20px 8px" }}>
@@ -315,7 +390,8 @@ const WeekdayCard = ({ d, dateLabel, openEx, toggleEx, isCompleted, onToggleComp
         <ExerciseRow key={i} num={i + 1} {...ex} accent={d.accent} onClick={() => toggleEx(i)} isOpen={openEx === i} />
       ))}
     </div>
-    <div style={{ background: d.light, margin: "0 16px 16px", borderRadius: 10, padding: "12px 14px", borderLeft: `3px solid ${d.accent}` }}>
+    <StretchBlock title="COOL-DOWN — 5 MIN" items={d.cooldown} light={d.light} accent={d.accent} />
+    <div style={{ background: d.light, margin: "16px 16px 16px", borderRadius: 10, padding: "12px 14px", borderLeft: `3px solid ${d.accent}` }}>
       <div style={{ fontSize: 10, fontWeight: 800, color: d.accent, letterSpacing: "0.1em", marginBottom: 4 }}>COACH TIP</div>
       <div style={{ fontSize: 12, color: "#444", lineHeight: 1.6 }}>{d.tip}</div>
     </div>
