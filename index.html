@@ -202,6 +202,47 @@ function dateKey(date) {
   return `${y}-${m}-${d}`;
 }
 
+function computeStreak(completed, today) {
+  let streak = 0;
+  const cursor = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const todayIsSunday = cursor.getDay() === 0;
+  if (todayIsSunday || !completed[dateKey(cursor)]) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  while (true) {
+    if (cursor.getDay() === 0) { cursor.setDate(cursor.getDate() - 1); continue; }
+    if (completed[dateKey(cursor)]) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function lastEntryBefore(exLog, beforeKey) {
+  const dates = Object.keys(exLog).filter((d) => d < beforeKey).sort();
+  if (!dates.length) return null;
+  const d = dates[dates.length - 1];
+  return { date: d, ...exLog[d] };
+}
+
+function recentEntries(exLog, excludeKey, limit) {
+  return Object.keys(exLog)
+    .filter((d) => d !== excludeKey)
+    .sort()
+    .reverse()
+    .slice(0, limit)
+    .map((d) => ({ date: d, ...exLog[d] }));
+}
+
+function formatLogDate(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  return `${MONTH_NAMES[dt.getMonth()].slice(0, 3)} ${dt.getDate()}`;
+}
+
 function getDayTheme(date) {
   const dow = date.getDay();
   if (dow >= 1 && dow <= 5) {
@@ -239,47 +280,103 @@ const MuscleTag = ({ name }) => (
   }}>{name}</span>
 );
 
-const ExerciseRow = ({ num, name, sets, reps, img, accent, onClick, isOpen }) => (
-  <div style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
-    <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", cursor: "pointer" }}>
-      <div style={{
-        width: 26, height: 26, borderRadius: "50%", background: accent,
-        color: "#fff", fontSize: 11, fontWeight: 800,
-        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-      }}>{num}</div>
-      <img src={img} alt={name} loading="lazy" style={{
-        width: 48, height: 48, objectFit: "cover", borderRadius: 8,
-        flexShrink: 0, border: `2px solid ${accent}33`, background: "#eee",
-      }} />
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>{name}</div>
-      </div>
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: accent }}>{sets} sets</div>
-        <div style={{ fontSize: 10, color: "#888", fontWeight: 500 }}>{reps}</div>
-      </div>
-      <div style={{ color: "#ccc", fontSize: 12, flexShrink: 0, transition: "transform 0.2s", transform: isOpen ? "rotate(90deg)" : "rotate(0deg)" }}>▶</div>
-    </div>
-    {isOpen && (
-      <div style={{ paddingBottom: 14, paddingLeft: 38 }}>
-        <img src={img} alt={name} style={{
-          width: "100%", maxWidth: 300, height: 200,
-          objectFit: "cover", borderRadius: 12, border: `2px solid ${accent}33`, display: "block", background: "#eee",
+const ExerciseRow = ({ num, name, sets, reps, img, accent, onClick, isOpen, exLog, selectedKey, onLogChange }) => {
+  const [showHistory, setShowHistory] = useState(false);
+  const todayEntry = exLog[selectedKey] || {};
+  const lastEntry = lastEntryBefore(exLog, selectedKey);
+  const displayWeight = todayEntry.weight !== undefined ? todayEntry.weight : (lastEntry ? (lastEntry.weight || "") : "");
+  const displayReps = todayEntry.actualReps !== undefined ? todayEntry.actualReps : (lastEntry ? (lastEntry.actualReps || "") : "");
+  const badgeParts = [displayWeight, displayReps && `${displayReps} reps`].filter(Boolean);
+  const history = recentEntries(exLog, selectedKey, 6);
+
+  return (
+    <div style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+      <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", cursor: "pointer" }}>
+        <div style={{
+          width: 26, height: 26, borderRadius: "50%", background: accent,
+          color: "#fff", fontSize: 11, fontWeight: 800,
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>{num}</div>
+        <img src={img} alt={name} loading="lazy" style={{
+          width: 48, height: 48, objectFit: "cover", borderRadius: 8,
+          flexShrink: 0, border: `2px solid ${accent}33`, background: "#eee",
         }} />
-        <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(name + " exercise proper form")}`}
-          target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-          style={{
-            display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8,
-            fontSize: 11, fontWeight: 700, color: "#fff", background: accent,
-            padding: "6px 12px", borderRadius: 20, textDecoration: "none",
-          }}>
-          ▶ Watch the movement
-        </a>
-        <div style={{ fontSize: 11, color: "#999", marginTop: 6 }}>Tap image to collapse</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>{name}</div>
+          {badgeParts.length > 0 && <div style={{ fontSize: 10, color: accent, fontWeight: 700, marginTop: 2 }}>Last: {badgeParts.join(" · ")}</div>}
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: accent }}>{sets} sets</div>
+          <div style={{ fontSize: 10, color: "#888", fontWeight: 500 }}>{reps}</div>
+        </div>
+        <div style={{ color: "#ccc", fontSize: 12, flexShrink: 0, transition: "transform 0.2s", transform: isOpen ? "rotate(90deg)" : "rotate(0deg)" }}>▶</div>
       </div>
-    )}
-  </div>
-);
+      {isOpen && (
+        <div style={{ paddingBottom: 14, paddingLeft: 38 }}>
+          <img src={img} alt={name} style={{
+            width: "100%", maxWidth: 300, height: 200,
+            objectFit: "cover", borderRadius: 12, border: `2px solid ${accent}33`, display: "block", background: "#eee",
+          }} />
+          <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(name + " exercise proper form")}`}
+            target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8,
+              fontSize: 11, fontWeight: 700, color: "#fff", background: accent,
+              padding: "6px 12px", borderRadius: 20, textDecoration: "none",
+            }}>
+            ▶ Watch the movement
+          </a>
+          <div style={{ marginTop: 12, maxWidth: 260, display: "flex", gap: 8 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 10, fontWeight: 800, color: "#999", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>WEIGHT</label>
+              <input
+                type="text" inputMode="decimal" value={displayWeight}
+                onChange={(e) => onLogChange("weight", e.target.value)}
+                placeholder="e.g. 12kg"
+                style={{
+                  fontSize: 13, fontWeight: 600, padding: "8px 10px", borderRadius: 8,
+                  border: `1.5px solid ${accent}55`, width: "100%", outline: "none",
+                  color: "#1a1a1a", background: "#fff",
+                }}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 10, fontWeight: 800, color: "#999", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>REPS DONE</label>
+              <input
+                type="text" inputMode="decimal" value={displayReps}
+                onChange={(e) => onLogChange("actualReps", e.target.value)}
+                placeholder="e.g. 10"
+                style={{
+                  fontSize: 13, fontWeight: 600, padding: "8px 10px", borderRadius: 8,
+                  border: `1.5px solid ${accent}55`, width: "100%", outline: "none",
+                  color: "#1a1a1a", background: "#fff",
+                }}
+              />
+            </div>
+          </div>
+          {history.length > 0 && (
+            <div style={{ marginTop: 10 }} onClick={(e) => e.stopPropagation()}>
+              <div onClick={() => setShowHistory(!showHistory)} style={{ fontSize: 11, fontWeight: 700, color: accent, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                {showHistory ? "▾" : "▸"} History
+              </div>
+              {showHistory && (
+                <div style={{ marginTop: 6, background: "#F5F5F0", borderRadius: 8, padding: "8px 10px" }}>
+                  {history.map((h, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#555", padding: "3px 0" }}>
+                      <span>{formatLogDate(h.date)}</span>
+                      <span style={{ fontWeight: 700 }}>{[h.weight, h.actualReps && `${h.actualReps} reps`].filter(Boolean).join(" · ") || "—"}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          <div style={{ fontSize: 11, color: "#999", marginTop: 8 }}>Tap image to collapse</div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CalendarDay = ({ date, isCurrentMonth, isToday, isSelected, isCompleted, onClick }) => {
   const theme = getDayTheme(date);
@@ -365,7 +462,7 @@ const StretchBlock = ({ title, items, light, accent }) => (
   </div>
 );
 
-const WeekdayCard = ({ d, dateLabel, openEx, toggleEx, isCompleted, onToggleComplete }) => (
+const WeekdayCard = ({ d, dateLabel, openEx, toggleEx, isCompleted, onToggleComplete, logs, selectedKey, onLogChange }) => (
   <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", marginBottom: 20 }}>
     <div style={{ background: d.color, padding: "20px 20px 16px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -392,7 +489,8 @@ const WeekdayCard = ({ d, dateLabel, openEx, toggleEx, isCompleted, onToggleComp
     </div>
     <div style={{ padding: "4px 20px 8px" }}>
       {d.exercises.map((ex, i) => (
-        <ExerciseRow key={i} num={i + 1} {...ex} accent={d.accent} onClick={() => toggleEx(i)} isOpen={openEx === i} />
+        <ExerciseRow key={i} num={i + 1} {...ex} accent={d.accent} onClick={() => toggleEx(i)} isOpen={openEx === i}
+          exLog={logs[ex.name] || {}} selectedKey={selectedKey} onLogChange={(field, value) => onLogChange(ex.name, field, value)} />
       ))}
     </div>
     <StretchBlock title="COOL-DOWN — 5 MIN" items={d.cooldown} light={d.light} accent={d.accent} />
@@ -470,13 +568,29 @@ function App() {
     try { return JSON.parse(localStorage.getItem("workoutCompleted")) || {}; }
     catch (e) { return {}; }
   });
+  const [logs, setLogs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("exerciseLogs")) || {}; }
+    catch (e) { return {}; }
+  });
 
   useEffect(() => {
     localStorage.setItem("workoutCompleted", JSON.stringify(completed));
   }, [completed]);
 
+  useEffect(() => {
+    localStorage.setItem("exerciseLogs", JSON.stringify(logs));
+  }, [logs]);
+
   const handleSelect = (date) => { setSelectedDate(date); setOpenEx(null); };
   const toggleEx = (i) => setOpenEx(openEx === i ? null : i);
+  const updateLog = (name, field, value) => {
+    const key = dateKey(selectedDate);
+    setLogs((prev) => {
+      const exLog = { ...(prev[name] || {}) };
+      exLog[key] = { ...(exLog[key] || {}), [field]: value };
+      return { ...prev, [name]: exLog };
+    });
+  };
   const toggleComplete = (date) => {
     const key = dateKey(date);
     setCompleted((prev) => {
@@ -489,6 +603,7 @@ function App() {
   const theme = getDayTheme(selectedDate);
   const dateLabel = `${WEEKDAY_NAMES[selectedDate.getDay()].toUpperCase()}, ${MONTH_NAMES[selectedDate.getMonth()].slice(0, 3).toUpperCase()} ${selectedDate.getDate()}`;
   const isSelectedCompleted = !!completed[dateKey(selectedDate)];
+  const streak = computeStreak(completed, today);
 
   return (
     <div style={{ fontFamily: "Inter, Helvetica Neue, Arial, sans-serif", background: "#F5F5F0", minHeight: "100vh", paddingBottom: 40 }}>
@@ -496,6 +611,12 @@ function App() {
         <div style={{ fontSize: 10, letterSpacing: "0.25em", color: "#888", marginBottom: 6, fontWeight: 700 }}>WORKOUT CALENDAR</div>
         <h1 style={{ color: "#fff", fontSize: 26, fontWeight: 900, margin: 0, letterSpacing: "-0.02em" }}>STRONGER EVERY DAY</h1>
         <div style={{ color: "#666", fontSize: 12, marginTop: 6, letterSpacing: "0.05em" }}>Tap any date to see that day's workout.</div>
+        {streak > 0 && (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, background: "rgba(255,255,255,0.1)", padding: "5px 14px", borderRadius: 20 }}>
+            <span style={{ fontSize: 14 }}>🔥</span>
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>{streak} day streak</span>
+          </div>
+        )}
       </div>
 
       <div style={{ background: "#1a1a1a", padding: "10px 20px", display: "flex", gap: 20, overflowX: "auto", borderBottom: "1px solid #333" }}>
@@ -512,7 +633,7 @@ function App() {
           <Calendar viewMonth={viewMonth} setViewMonth={setViewMonth} selectedDate={selectedDate} onSelect={handleSelect} completed={completed} />
         </div>
 
-        {theme.type === "weekday" && <WeekdayCard d={theme.data} dateLabel={dateLabel} openEx={openEx} toggleEx={toggleEx} isCompleted={isSelectedCompleted} onToggleComplete={() => toggleComplete(selectedDate)} />}
+        {theme.type === "weekday" && <WeekdayCard d={theme.data} dateLabel={dateLabel} openEx={openEx} toggleEx={toggleEx} isCompleted={isSelectedCompleted} onToggleComplete={() => toggleComplete(selectedDate)} logs={logs} selectedKey={dateKey(selectedDate)} onLogChange={updateLog} />}
         {theme.type === "saturday" && <SaturdayCard dateLabel={dateLabel} isCompleted={isSelectedCompleted} onToggleComplete={() => toggleComplete(selectedDate)} />}
         {theme.type === "sunday" && <SundayCard dateLabel={dateLabel} isCompleted={isSelectedCompleted} onToggleComplete={() => toggleComplete(selectedDate)} />}
 
