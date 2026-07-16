@@ -49,14 +49,14 @@ const days = [
     ],
     warmup: [
       { name: "March in Place / High Knees", detail: "60 sec" },
-      { name: "Bodyweight Squats", detail: "15 reps" },
+      { name: "Bodyweight Squats", detail: "15 reps", img: img("Bodyweight_Squat") },
       { name: "Leg Swings (front-back)", detail: "10 each leg" },
       { name: "Ankle Circles", detail: "10 each way" },
     ],
     cooldown: [
-      { name: "Standing Quad Stretch", detail: "30 sec each leg" },
-      { name: "Standing Hamstring Stretch", detail: "30 sec each leg" },
-      { name: "Calf Stretch (wall)", detail: "30 sec each leg" },
+      { name: "Standing Quad Stretch", detail: "30 sec each leg", img: img("Standing_Elevated_Quad_Stretch") },
+      { name: "Standing Hamstring Stretch", detail: "30 sec each leg", img: img("Standing_Hamstring_and_Calf_Stretch") },
+      { name: "Calf Stretch (wall)", detail: "30 sec each leg", img: img("Standing_Gastrocnemius_Calf_Stretch") },
       { name: "Child's Pose", detail: "30 sec" },
     ],
     tip: "Push through heels. Control the movement. Use a weight that makes the last 1–2 reps challenging.",
@@ -74,14 +74,14 @@ const days = [
     ],
     warmup: [
       { name: "Arm Circles", detail: "30 sec each way" },
-      { name: "Shoulder Rolls / Band Pull-Aparts", detail: "15 reps" },
-      { name: "Push-Up to Down Dog", detail: "8 reps" },
+      { name: "Shoulder Rolls / Band Pull-Aparts", detail: "15 reps", img: img("Band_Pull_Apart") },
+      { name: "Push-Up to Down Dog", detail: "8 reps", img: img("Inchworm") },
       { name: "Light Punches / Shadow Press", detail: "30 sec" },
     ],
     cooldown: [
-      { name: "Doorway Chest Stretch", detail: "30 sec each side" },
-      { name: "Overhead Triceps Stretch", detail: "30 sec each arm" },
-      { name: "Cross-Body Shoulder Stretch", detail: "30 sec each arm" },
+      { name: "Doorway Chest Stretch", detail: "30 sec each side", img: img("Chest_And_Front_Of_Shoulder_Stretch") },
+      { name: "Overhead Triceps Stretch", detail: "30 sec each arm", img: img("Triceps_Stretch") },
+      { name: "Cross-Body Shoulder Stretch", detail: "30 sec each arm", img: img("Shoulder_Stretch") },
       { name: "Child's Pose", detail: "30 sec" },
     ],
     tip: "Press movements. Keep core tight. Lower the weight slowly and with control.",
@@ -98,15 +98,15 @@ const days = [
       { name: "Plank", sets: 2, reps: "30–45 sec", img: img("Plank") },
     ],
     warmup: [
-      { name: "Glute Bridges", detail: "15 reps" },
+      { name: "Glute Bridges", detail: "15 reps", img: img("Pelvic_Tilt_Into_Bridge") },
       { name: "Leg Swings (side-to-side)", detail: "10 each leg" },
-      { name: "Walking Lunges", detail: "10 each leg" },
-      { name: "Cat-Cow", detail: "8 reps" },
+      { name: "Walking Lunges", detail: "10 each leg", img: img("Bodyweight_Walking_Lunge") },
+      { name: "Cat-Cow", detail: "8 reps", img: img("Cat_Stretch") },
     ],
     cooldown: [
-      { name: "Seated Hamstring Stretch", detail: "30 sec each leg" },
-      { name: "Figure-4 Glute Stretch", detail: "30 sec each leg" },
-      { name: "Kneeling Hip Flexor Stretch", detail: "30 sec each leg" },
+      { name: "Seated Hamstring Stretch", detail: "30 sec each leg", img: img("Seated_Floor_Hamstring_Stretch") },
+      { name: "Figure-4 Glute Stretch", detail: "30 sec each leg", img: img("IT_Band_and_Glute_Stretch") },
+      { name: "Kneeling Hip Flexor Stretch", detail: "30 sec each leg", img: img("Kneeling_Hip_Flexor") },
       { name: "Child's Pose", detail: "30 sec" },
     ],
     tip: "Hinge at hips on deadlift. Squeeze glutes at the top of bridges. Keep a straight line in plank.",
@@ -124,14 +124,14 @@ const days = [
     ],
     warmup: [
       { name: "Arm Circles", detail: "30 sec each way" },
-      { name: "Scapular Pulls / Shoulder Rolls", detail: "15 reps" },
-      { name: "Light Band Rows", detail: "15 reps" },
-      { name: "Cat-Cow", detail: "8 reps" },
+      { name: "Scapular Pulls / Shoulder Rolls", detail: "15 reps", img: img("Band_Pull_Apart") },
+      { name: "Light Band Rows", detail: "15 reps", img: img("Bodyweight_Mid_Row") },
+      { name: "Cat-Cow", detail: "8 reps", img: img("Cat_Stretch") },
     ],
     cooldown: [
-      { name: "Overhead Side Lat Stretch", detail: "30 sec each side" },
-      { name: "Doorway Chest/Bicep Stretch", detail: "30 sec" },
-      { name: "Neck & Upper Trap Stretch", detail: "30 sec each side" },
+      { name: "Overhead Side Lat Stretch", detail: "30 sec each side", img: img("Standing_Lateral_Stretch") },
+      { name: "Doorway Chest/Bicep Stretch", detail: "30 sec", img: img("Standing_Biceps_Stretch") },
+      { name: "Neck & Upper Trap Stretch", detail: "30 sec each side", img: img("Side_Neck_Stretch") },
       { name: "Child's Pose", detail: "30 sec" },
     ],
     tip: "Pull movements. Squeeze shoulder blades together. Slow and controlled.",
@@ -150,14 +150,14 @@ const days = [
     ],
     warmup: [
       { name: "Jumping Jacks / March in Place", detail: "60 sec" },
-      { name: "Bodyweight Squats", detail: "15 reps" },
+      { name: "Bodyweight Squats", detail: "15 reps", img: img("Bodyweight_Squat") },
       { name: "Arm Circles", detail: "30 sec each way" },
-      { name: "Walking Lunges", detail: "10 each leg" },
+      { name: "Walking Lunges", detail: "10 each leg", img: img("Bodyweight_Walking_Lunge") },
     ],
     cooldown: [
       { name: "Standing Forward Fold", detail: "30 sec" },
-      { name: "Standing Quad Stretch", detail: "30 sec each leg" },
-      { name: "Doorway Chest Stretch", detail: "30 sec" },
+      { name: "Standing Quad Stretch", detail: "30 sec each leg", img: img("Standing_Elevated_Quad_Stretch") },
+      { name: "Doorway Chest Stretch", detail: "30 sec", img: img("Chest_And_Front_Of_Shoulder_Stretch") },
       { name: "Child's Pose", detail: "30 sec" },
     ],
     tip: "Use moderate-heavy weights. Great full body workout to finish the week.",
@@ -448,15 +448,28 @@ const StretchBlock = ({ title, items, light, accent }) => (
     <div style={{ fontSize: 10, fontWeight: 800, color: "#999", letterSpacing: "0.1em", marginBottom: 8 }}>{title}</div>
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
       {items.map((it, i) => (
-        <div key={i} style={{ background: light, borderRadius: 8, padding: "8px 10px", borderLeft: `3px solid ${accent}` }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#1a1a1a" }}>{it.name}</div>
-          <div style={{ fontSize: 10, color: "#888", marginTop: 1 }}>{it.detail}</div>
-          <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(it.name + " exercise proper form")}`}
-            target="_blank" rel="noopener noreferrer"
-            style={{ display: "inline-block", marginTop: 4, fontSize: 10, fontWeight: 700, color: accent, textDecoration: "none" }}>
-            ▶ Watch
-          </a>
-        </div>
+        <a key={i}
+          href={`https://www.youtube.com/results?search_query=${encodeURIComponent(it.name + " exercise proper form")}`}
+          target="_blank" rel="noopener noreferrer"
+          style={{
+            display: "flex", alignItems: "center", gap: 8, background: light, borderRadius: 8,
+            padding: "8px 10px", borderLeft: `3px solid ${accent}`, textDecoration: "none",
+          }}>
+          {it.img ? (
+            <img src={it.img} alt={it.name} loading="lazy" style={{
+              width: 36, height: 36, objectFit: "cover", borderRadius: 6, flexShrink: 0, background: "#eee",
+            }} />
+          ) : (
+            <div style={{
+              width: 36, height: 36, borderRadius: 6, flexShrink: 0, background: `${accent}22`,
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: accent,
+            }}>▶</div>
+          )}
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#1a1a1a" }}>{it.name}</div>
+            <div style={{ fontSize: 10, color: "#888", marginTop: 1 }}>{it.detail}</div>
+          </div>
+        </a>
       ))}
     </div>
   </div>
