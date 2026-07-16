@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Stronger Every Day — Workout Calendar</title>
+
+<!-- iOS "Add to Home Screen" support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stronger Every Day">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#111111">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; background: #F5F5F0; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+/* Real exercise photos from the free-exercise-db public domain dataset
+   (github.com/yuhonas/free-exercise-db, Unlicense) served via jsDelivr. */
+const IMG_BASE = "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/";
+const img = (id) => `${IMG_BASE}${id}/0.jpg`;
+
+/* ---------------- Program data ---------------- */
+
+const days = [
+  {
+    day: "MON", label: "Lower Body A", focus: "Quads · Glutes · Calves",
+    color: "#2D5A3D", accent: "#4A8C60", light: "#EAF3ED", tag: "LOWER",
+    exercises: [
+      { name: "Goblet Squat", sets: 2, reps: "8–12", img: img("Goblet_Squat") },
+      { name: "Reverse Lunge", sets: 2, reps: "8–10 each leg", img: img("Dumbbell_Rear_Lunge") },
+      { name: "Hip Thrust", sets: 2, reps: "10–12", img: img("Barbell_Hip_Thrust") },
+      { name: "Calf Raise", sets: 2, reps: "12–15", img: img("Standing_Dumbbell_Calf_Raise") },
+      { name: "Farmer's Carry", sets: 2, reps: "30–45 sec", img: img("Farmers_Walk") },
+    ],
+    tip: "Push through heels. Control the movement. Use a weight that makes the last 1–2 reps challenging.",
+    muscles: ["Quads", "Glutes", "Calves"],
+  },
+  {
+    day: "TUE", label: "Upper Body Push", focus: "Chest · Shoulders · Triceps",
+    color: "#7B2D5A", accent: "#B84E84", light: "#F7EAF3", tag: "UPPER",
+    exercises: [
+      { name: "Dumbbell Bench Press", sets: 2, reps: "8–12", img: img("Dumbbell_Bench_Press") },
+      { name: "Incline Dumbbell Press", sets: 2, reps: "8–12", img: img("Incline_Dumbbell_Press") },
+      { name: "Shoulder Press", sets: 2, reps: "8–12", img: img("Dumbbell_Shoulder_Press") },
+      { name: "Lateral Raise", sets: 2, reps: "12–15", img: img("Side_Lateral_Raise") },
+      { name: "Overhead Tricep Extension", sets: 2, reps: "10–12", img: img("Standing_Dumbbell_Triceps_Extension") },
+    ],
+    tip: "Press movements. Keep core tight. Lower the weight slowly and with control.",
+    muscles: ["Chest", "Shoulders", "Triceps"],
+  },
+  {
+    day: "WED", label: "Lower Body B", focus: "Hamstrings · Glutes · Core",
+    color: "#1D4A6B", accent: "#2E7AB0", light: "#E8F2F9", tag: "LOWER",
+    exercises: [
+      { name: "Romanian Deadlift", sets: 2, reps: "8–12", img: img("Romanian_Deadlift") },
+      { name: "Bulgarian Split Squat", sets: 2, reps: "8–10 each leg", img: img("Suspended_Split_Squat") },
+      { name: "Step-Ups", sets: 2, reps: "10–12 each leg", img: img("Dumbbell_Step_Ups") },
+      { name: "Glute Bridge", sets: 2, reps: "12–15", img: img("Barbell_Glute_Bridge") },
+      { name: "Plank", sets: 2, reps: "30–45 sec", img: img("Plank") },
+    ],
+    tip: "Hinge at hips on deadlift. Squeeze glutes at the top of bridges. Keep a straight line in plank.",
+    muscles: ["Hamstrings", "Glutes", "Core"],
+  },
+  {
+    day: "THU", label: "Upper Body Pull", focus: "Back · Biceps · Rear Shoulders",
+    color: "#5A4A1D", accent: "#9B7E35", light: "#F7F2E8", tag: "UPPER",
+    exercises: [
+      { name: "One-Arm Dumbbell Row", sets: 2, reps: "8–12", img: img("One-Arm_Dumbbell_Row") },
+      { name: "Bent-Over Barbell Row", sets: 2, reps: "8–12", img: img("Bent_Over_Barbell_Row") },
+      { name: "Resistance Band Face Pull", sets: 2, reps: "12–15", img: img("Face_Pull") },
+      { name: "Hammer Curl", sets: 2, reps: "10–12", img: img("Hammer_Curls") },
+      { name: "Biceps Curl", sets: 2, reps: "10–12", img: img("Dumbbell_Bicep_Curl") },
+    ],
+    tip: "Pull movements. Squeeze shoulder blades together. Slow and controlled.",
+    muscles: ["Back", "Biceps", "Rear Shoulders"],
+  },
+  {
+    day: "FRI", label: "Full Body Strength", focus: "All Major Muscle Groups",
+    color: "#3D2D5A", accent: "#6B4A9B", light: "#EEE8F7", tag: "FULL",
+    exercises: [
+      { name: "Goblet Squat", sets: 2, reps: "8–12", img: img("Goblet_Squat") },
+      { name: "Romanian Deadlift", sets: 2, reps: "8–12", img: img("Romanian_Deadlift") },
+      { name: "Dumbbell Bench Press", sets: 2, reps: "8–12", img: img("Dumbbell_Bench_Press") },
+      { name: "One-Arm Row", sets: 2, reps: "8–12", img: img("One-Arm_Dumbbell_Row") },
+      { name: "Shoulder Press", sets: 2, reps: "8–12", img: img("Dumbbell_Shoulder_Press") },
+      { name: "Farmer's Carry", sets: 2, reps: "30–45 sec", img: img("Farmers_Walk") },
+    ],
+    tip: "Use moderate-heavy weights. Great full body workout to finish the week.",
+    muscles: ["Chest", "Back", "Shoulders", "Quads", "Hamstrings", "Glutes"],
+  },
+];
+
+const saturday = {
+  day: "SAT", label: "Movement Day", focus: "Mobility · Core · Light Work",
+  color: "#2D4A5A", accent: "#4A8098", light: "#E8F2F5",
+  blocks: [
+    { name: "Mobility Flow", detail: "5–10 min" },
+    { name: "Resistance Band Work", detail: "2–3 exercises · 12–15 reps" },
+    { name: "Core Circuit", detail: "2–3 exercises · 12–15 reps" },
+    { name: "Stretch", detail: "5–10 min" },
+    { name: "Walk", detail: "20–30 min" },
+  ],
+  tip: "Focus on movement, recovery and flexibility. Keep it light. This helps your body recover and reduces soreness.",
+};
+
+const muscleColors = {
+  Chest: "#E06B8B", Back: "#6B9BE0", Shoulders: "#7DC47D",
+  Biceps: "#C47DB8", Triceps: "#C4A87D", Quads: "#7DC4B8",
+  Hamstrings: "#C4C47D", Glutes: "#E09B6B", Calves: "#8BC47D",
+  Core: "#C4906B", "Rear Shoulders": "#9B8BC4",
+};
+
+/* ---------------- Calendar helpers ---------------- */
+
+const WEEKDAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function sameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function dateKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function getDayTheme(date) {
+  const dow = date.getDay();
+  if (dow >= 1 && dow <= 5) {
+    const d = days[dow - 1];
+    return { type: "weekday", color: d.color, accent: d.accent, light: d.light, data: d };
+  }
+  if (dow === 6) return { type: "saturday", color: saturday.color, accent: saturday.accent, light: saturday.light, data: saturday };
+  return { type: "sunday", color: "#555", accent: "#999", light: "#EFEFEF", data: null };
+}
+
+/* ---------------- UI components ---------------- */
+
+const CompleteToggle = ({ isCompleted, onToggle }) => (
+  <div onClick={onToggle} style={{
+    display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer",
+    padding: "8px 14px", borderRadius: 20, fontSize: 12, fontWeight: 800,
+    background: isCompleted ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.15)",
+    color: isCompleted ? "#1a1a1a" : "#fff",
+    border: isCompleted ? "none" : "1px solid rgba(255,255,255,0.35)",
+  }}>
+    <span style={{
+      width: 16, height: 16, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+      background: isCompleted ? "#4A8C60" : "transparent", color: "#fff", fontSize: 10,
+      border: isCompleted ? "none" : "1.5px solid rgba(255,255,255,0.6)",
+    }}>{isCompleted ? "✓" : ""}</span>
+    {isCompleted ? "Workout Complete" : "Mark as Done"}
+  </div>
+);
+
+const MuscleTag = ({ name }) => (
+  <span style={{
+    background: muscleColors[name] || "#ccc", color: "#fff",
+    fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
+    padding: "2px 7px", borderRadius: 20, textTransform: "uppercase", display: "inline-block",
+  }}>{name}</span>
+);
+
+const ExerciseRow = ({ num, name, sets, reps, img, accent, onClick, isOpen }) => (
+  <div style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+    <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", cursor: "pointer" }}>
+      <div style={{
+        width: 26, height: 26, borderRadius: "50%", background: accent,
+        color: "#fff", fontSize: 11, fontWeight: 800,
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+      }}>{num}</div>
+      <img src={img} alt={name} loading="lazy" style={{
+        width: 48, height: 48, objectFit: "cover", borderRadius: 8,
+        flexShrink: 0, border: `2px solid ${accent}33`, background: "#eee",
+      }} />
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>{name}</div>
+      </div>
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: accent }}>{sets} sets</div>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 500 }}>{reps}</div>
+      </div>
+      <div style={{ color: "#ccc", fontSize: 12, flexShrink: 0, transition: "transform 0.2s", transform: isOpen ? "rotate(90deg)" : "rotate(0deg)" }}>▶</div>
+    </div>
+    {isOpen && (
+      <div style={{ paddingBottom: 14, paddingLeft: 38 }}>
+        <img src={img} alt={name} style={{
+          width: "100%", maxWidth: 300, height: 200,
+          objectFit: "cover", borderRadius: 12, border: `2px solid ${accent}33`, display: "block", background: "#eee",
+        }} />
+        <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(name + " exercise proper form")}`}
+          target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8,
+            fontSize: 11, fontWeight: 700, color: "#fff", background: accent,
+            padding: "6px 12px", borderRadius: 20, textDecoration: "none",
+          }}>
+          ▶ Watch the movement
+        </a>
+        <div style={{ fontSize: 11, color: "#999", marginTop: 6 }}>Tap image to collapse</div>
+      </div>
+    )}
+  </div>
+);
+
+const CalendarDay = ({ date, isCurrentMonth, isToday, isSelected, isCompleted, onClick }) => {
+  const theme = getDayTheme(date);
+  return (
+    <div onClick={onClick} style={{
+      position: "relative", aspectRatio: "1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      gap: 3, borderRadius: 10, cursor: "pointer", opacity: isCurrentMonth ? 1 : 0.3,
+      background: isSelected ? theme.color : "transparent",
+      border: isToday && !isSelected ? `2px solid ${theme.accent}` : "2px solid transparent",
+    }}>
+      {isCompleted && (
+        <div style={{
+          position: "absolute", top: -3, right: -3, width: 15, height: 15, borderRadius: "50%",
+          background: "#4A8C60", color: "#fff", fontSize: 9, fontWeight: 900,
+          display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px solid #fff",
+        }}>✓</div>
+      )}
+      <div style={{ fontSize: 13, fontWeight: 700, color: isSelected ? "#fff" : "#1a1a1a" }}>{date.getDate()}</div>
+      <div style={{ width: 5, height: 5, borderRadius: "50%", background: isSelected ? "rgba(255,255,255,0.85)" : theme.accent }} />
+    </div>
+  );
+};
+
+const Calendar = ({ viewMonth, setViewMonth, selectedDate, onSelect, completed }) => {
+  const year = viewMonth.getFullYear();
+  const month = viewMonth.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const startOffset = firstDay.getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+
+  const cells = [];
+  for (let i = 0; i < startOffset; i++) cells.push(new Date(year, month, i - startOffset + 1));
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
+  while (cells.length % 7 !== 0) cells.push(new Date(year, month, daysInMonth + (cells.length - startOffset - daysInMonth) + 1));
+
+  return (
+    <div style={{ background: "#fff", borderRadius: 16, padding: "16px 16px 12px", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <div onClick={() => setViewMonth(new Date(year, month - 1, 1))} style={{ cursor: "pointer", padding: "4px 10px", fontSize: 16, color: "#999" }}>‹</div>
+        <div style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a" }}>{MONTH_NAMES[month]} {year}</div>
+        <div onClick={() => setViewMonth(new Date(year, month + 1, 1))} style={{ cursor: "pointer", padding: "4px 10px", fontSize: 16, color: "#999" }}>›</div>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
+        {WEEKDAY_LETTERS.map((l, i) => (
+          <div key={i} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "#bbb" }}>{l}</div>
+        ))}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+        {cells.map((date, i) => (
+          <CalendarDay key={i} date={date} isCurrentMonth={date.getMonth() === month}
+            isToday={sameDay(date, today)} isSelected={sameDay(date, selectedDate)}
+            isCompleted={!!completed[dateKey(date)]}
+            onClick={() => onSelect(date)} />
+        ))}
+      </div>
+      {!sameDay(selectedDate, today) && (
+        <div onClick={() => { onSelect(today); setViewMonth(new Date(today.getFullYear(), today.getMonth(), 1)); }}
+          style={{ textAlign: "center", marginTop: 10, fontSize: 11, fontWeight: 700, color: "#4A8C60", cursor: "pointer" }}>
+          Jump to Today
+        </div>
+      )}
+    </div>
+  );
+};
+
+const WeekdayCard = ({ d, dateLabel, openEx, toggleEx, isCompleted, onToggleComplete }) => (
+  <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", marginBottom: 20 }}>
+    <div style={{ background: d.color, padding: "20px 20px 16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", letterSpacing: "0.15em", fontWeight: 700, marginBottom: 4 }}>{dateLabel} — {d.tag} BODY</div>
+          <h2 style={{ color: "#fff", margin: 0, fontSize: 22, fontWeight: 900 }}>{d.label}</h2>
+          <div style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 4 }}>{d.focus}</div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{d.exercises.length}</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>EXERCISES</div>
+        </div>
+      </div>
+      <div style={{ marginTop: 14 }}>
+        <CompleteToggle isCompleted={isCompleted} onToggle={onToggleComplete} />
+      </div>
+      <div style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
+        {d.muscles.map((m) => <MuscleTag key={m} name={m} />)}
+      </div>
+    </div>
+    <div style={{ background: d.light, padding: "6px 20px", fontSize: 10, color: d.accent, fontWeight: 600, letterSpacing: "0.05em" }}>
+      TAP AN EXERCISE TO SEE THE FULL PHOTO
+    </div>
+    <div style={{ padding: "4px 20px 8px" }}>
+      {d.exercises.map((ex, i) => (
+        <ExerciseRow key={i} num={i + 1} {...ex} accent={d.accent} onClick={() => toggleEx(i)} isOpen={openEx === i} />
+      ))}
+    </div>
+    <div style={{ background: d.light, margin: "0 16px 16px", borderRadius: 10, padding: "12px 14px", borderLeft: `3px solid ${d.accent}` }}>
+      <div style={{ fontSize: 10, fontWeight: 800, color: d.accent, letterSpacing: "0.1em", marginBottom: 4 }}>COACH TIP</div>
+      <div style={{ fontSize: 12, color: "#444", lineHeight: 1.6 }}>{d.tip}</div>
+    </div>
+  </div>
+);
+
+const SaturdayCard = ({ dateLabel, isCompleted, onToggleComplete }) => (
+  <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", marginBottom: 20 }}>
+    <div style={{ background: saturday.color, padding: "18px 20px 14px" }}>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", letterSpacing: "0.15em", fontWeight: 700, marginBottom: 4 }}>{dateLabel} — MOVEMENT</div>
+      <h2 style={{ color: "#fff", margin: 0, fontSize: 20, fontWeight: 900 }}>{saturday.label}</h2>
+      <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, marginTop: 3 }}>{saturday.focus}</div>
+      <div style={{ marginTop: 12 }}>
+        <CompleteToggle isCompleted={isCompleted} onToggle={onToggleComplete} />
+      </div>
+    </div>
+    <div style={{ padding: "12px 20px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+        {saturday.blocks.map((b, i) => (
+          <div key={i} style={{ background: "#F5F5F0", borderRadius: 8, padding: "10px 12px", borderLeft: `3px solid ${saturday.accent}` }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a" }}>{b.name}</div>
+            <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>{b.detail}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: "#E8F5F8", borderRadius: 8, padding: "10px 14px", borderLeft: `3px solid ${saturday.accent}` }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: saturday.accent, letterSpacing: "0.1em", marginBottom: 3 }}>COACH TIP</div>
+        <div style={{ fontSize: 12, color: "#444", lineHeight: 1.6 }}>{saturday.tip}</div>
+      </div>
+    </div>
+  </div>
+);
+
+const SundayCard = ({ dateLabel, isCompleted, onToggleComplete }) => (
+  <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", marginBottom: 20 }}>
+    <div style={{ background: "#555", padding: "18px 20px 14px" }}>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", letterSpacing: "0.15em", fontWeight: 700, marginBottom: 4 }}>{dateLabel} — REST</div>
+      <h2 style={{ color: "#fff", margin: 0, fontSize: 20, fontWeight: 900 }}>Rest Day</h2>
+      <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, marginTop: 3 }}>Recover and Recharge</div>
+      <div style={{ marginTop: 12 }}>
+        <CompleteToggle isCompleted={isCompleted} onToggle={onToggleComplete} />
+      </div>
+    </div>
+    <div style={{ padding: "14px 20px" }}>
+      {[
+        { icon: "🌙", title: "Sleep", detail: "Aim for 7–9 hours" },
+        { icon: "🚶", title: "Move Gently", detail: "Walk, stretch, or do something you enjoy" },
+        { icon: "🧘", title: "Focus on You", detail: "Hydrate, eat well, relax and reflect" },
+      ].map((r, i) => (
+        <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "1px solid #f0f0f0" : "none" }}>
+          <div style={{ fontSize: 20 }}>{r.icon}</div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>{r.title}</div>
+            <div style={{ fontSize: 12, color: "#888" }}>{r.detail}</div>
+          </div>
+        </div>
+      ))}
+      <div style={{ marginTop: 12, background: "#F5F5F0", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#555", fontStyle: "italic", lineHeight: 1.6, textAlign: "center" }}>
+        Rest is when your muscles grow. Give your body time to rebuild and come back stronger.
+      </div>
+    </div>
+  </div>
+);
+
+function App() {
+  const today = new Date();
+  const [viewMonth, setViewMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [openEx, setOpenEx] = useState(null);
+  const [completed, setCompleted] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("workoutCompleted")) || {}; }
+    catch (e) { return {}; }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("workoutCompleted", JSON.stringify(completed));
+  }, [completed]);
+
+  const handleSelect = (date) => { setSelectedDate(date); setOpenEx(null); };
+  const toggleEx = (i) => setOpenEx(openEx === i ? null : i);
+  const toggleComplete = (date) => {
+    const key = dateKey(date);
+    setCompleted((prev) => {
+      const next = { ...prev };
+      if (next[key]) delete next[key];
+      else next[key] = true;
+      return next;
+    });
+  };
+  const theme = getDayTheme(selectedDate);
+  const dateLabel = `${WEEKDAY_NAMES[selectedDate.getDay()].toUpperCase()}, ${MONTH_NAMES[selectedDate.getMonth()].slice(0, 3).toUpperCase()} ${selectedDate.getDate()}`;
+  const isSelectedCompleted = !!completed[dateKey(selectedDate)];
+
+  return (
+    <div style={{ fontFamily: "Inter, Helvetica Neue, Arial, sans-serif", background: "#F5F5F0", minHeight: "100vh", paddingBottom: 40 }}>
+      <div style={{ background: "#111", padding: "28px 24px 24px", textAlign: "center" }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.25em", color: "#888", marginBottom: 6, fontWeight: 700 }}>WORKOUT CALENDAR</div>
+        <h1 style={{ color: "#fff", fontSize: 26, fontWeight: 900, margin: 0, letterSpacing: "-0.02em" }}>STRONGER EVERY DAY</h1>
+        <div style={{ color: "#666", fontSize: 12, marginTop: 6, letterSpacing: "0.05em" }}>Tap any date to see that day's workout.</div>
+      </div>
+
+      <div style={{ background: "#1a1a1a", padding: "10px 20px", display: "flex", gap: 20, overflowX: "auto", borderBottom: "1px solid #333" }}>
+        {["2 sets per exercise", "8–12 reps per set", "Rest 45–60 sec between sets", "Quality over quantity"].map((g, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#4A8C60" }} />
+            <span style={{ fontSize: 11, color: "#aaa", whiteSpace: "nowrap", fontWeight: 500 }}>{g}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ maxWidth: 520, margin: "0 auto", padding: "0 16px" }}>
+        <div style={{ marginTop: 24 }}>
+          <Calendar viewMonth={viewMonth} setViewMonth={setViewMonth} selectedDate={selectedDate} onSelect={handleSelect} completed={completed} />
+        </div>
+
+        {theme.type === "weekday" && <WeekdayCard d={theme.data} dateLabel={dateLabel} openEx={openEx} toggleEx={toggleEx} isCompleted={isSelectedCompleted} onToggleComplete={() => toggleComplete(selectedDate)} />}
+        {theme.type === "saturday" && <SaturdayCard dateLabel={dateLabel} isCompleted={isSelectedCompleted} onToggleComplete={() => toggleComplete(selectedDate)} />}
+        {theme.type === "sunday" && <SundayCard dateLabel={dateLabel} isCompleted={isSelectedCompleted} onToggleComplete={() => toggleComplete(selectedDate)} />}
+
+        <div style={{ background: "#111", borderRadius: 16, padding: "20px", marginBottom: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: "#fff", letterSpacing: "0.12em", marginBottom: 14 }}>PROGRESSION — EACH WEEK, IMPROVE ONE:</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {[{ icon: "➕", label: "Add 1 rep" }, { icon: "🎯", label: "Improve your form" }, { icon: "⬆️", label: "Increase the weight" }, { icon: "🐢", label: "Slow down the movement" }].map((p, i) => (
+              <div key={i} style={{ background: "#1e1e1e", borderRadius: 8, padding: "10px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 16 }}>{p.icon}</span>
+                <span style={{ fontSize: 12, color: "#ccc", fontWeight: 500 }}>{p.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
+          <div style={{ fontSize: 11, color: "#bbb", letterSpacing: "0.1em", fontWeight: 600 }}>★ CONSISTENCY IS KEY. SHOW UP. DO THE WORK. BE PROUD.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
